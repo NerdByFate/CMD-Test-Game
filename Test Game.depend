@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1438816243 source:d:\2d game workspace sdl\test game\main.cpp
+	"libs.h"
+
+1438815733 d:\2d game workspace sdl\test game\libs.h
+	<iostream>
+	<cassert>
+
