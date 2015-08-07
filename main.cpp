@@ -3,7 +3,7 @@
 /
 /This program was authored by Cherokee Parker (aka NerdByFate; 33kingkiller; John Wot) on 8-3-15.
 /
-/This program was last updated on 8-5-15.
+/This program was last updated on 8-7-15.
 */
 
 #include "libs.h"
@@ -21,7 +21,7 @@ int main() {
     bool close = false;
     char board[dimension][dimension]; //Creates 2D array.
     char input;
-    cout << "Welcome to my test game! Enter 'w' to move up, 'a' to move to the left, and 'd' to move to the right. You can also use '~' to quit the game and 'r' to reset th-e board. Press enter after each character.\n\n";
+    cout << "Welcome to my test game! Enter 'w' to move up, 'a' to move to the left, and 'd' to move to the right. You can also use '~' to quit the game and 'r' to reset th-e board (this will spawn a new enemy). Press enter after each character.\n\n";
 
     //Main Module:
     CreateBoard(board);
@@ -29,18 +29,19 @@ int main() {
         close = TestClose(input);
         if(close == true) {
             break;
-        }
+        } //if
         PrintBoard(board);
         GetInput(input);
         MovePlayer(board, input);
-    }
+    } //while
+
     cout << "Thank you for playing this test game by Cherokee Parker!\n" << "Press ENTER to continue...\n\n";
     cin.ignore(1);
     cin.get();
     return 0;
 }
 
-void CreateBoard(char board[dimension][dimension]) { //Sets player to middle ('0'), everything else '-'.
+void CreateBoard(/* inout */ char board[dimension][dimension]) { //Sets player to middle ('0'), everything else '-'.
     //Precondition:
     //  2D Array has been declared and passed.
     //Postcondition:
@@ -57,11 +58,18 @@ void CreateBoard(char board[dimension][dimension]) { //Sets player to middle ('0
         board[i][7] = '-';
         board[i][8] = '-';
         board[i][(dimension-1)] = '-';
-    }
+    } //for
     board[4][4] = '0';
+
+    srand(time(0));
+    int dim1 = rand() % dimension;
+    int dim2 = rand() % dimension;
+    if(dim1 != 4 && dim2 != 4) {
+        board[dim1][dim2] = '8';
+    } //if
 }
 
-void PrintBoard(char board[dimension][dimension]) { //Prints 2D array.
+void PrintBoard(/* inout */ char board[dimension][dimension]) { //Prints 2D array.
     //Precondition:
     //  The board is set.
     //Postcondition:
@@ -71,10 +79,10 @@ void PrintBoard(char board[dimension][dimension]) { //Prints 2D array.
 
     for(int i = 0; i < (dimension-1); i++) {
         cout << board[i][0] << board[i][1] << board[i][2] << board[i][3] << board[i][4] << board[i][5] << board[i][6] << board[i][7] << board[i][8] << board[i][(dimension-1)] << endl;
-    }
+    } //for
 }
 
-void GetInput(char& input) { //"cin".
+void GetInput(/* out */ char& input) { //"cin".
     //Precondition:
     //  N/A.
     //Postcondition:
@@ -86,50 +94,63 @@ void GetInput(char& input) { //"cin".
     if(!cin) {
         cout << "ERROR: Input failure\n";
         return;
-    }
+    } //if
 }
 
-void MovePlayer(char board[dimension][dimension], char& userInput) { //Does not directly move the player.
+void MovePlayer(/* inout */ char board[dimension][dimension], /* in */ const char userInput) { //Does not directly move the player.
     //Precondition:
     //  N/A; level 2 has precondition.
     //Postcondition:
     //  The player has been moved.
 
-    TestPlayerLocation(board, userInput);
+    int x,y;
+
+    TestPlayerLocation(board, x, y);
+    RelocatePlayer(x, y, board, userInput);
 }
 
-void TestPlayerLocation(char board[dimension][dimension], char input) { //Runs "RelocatePlayer" with the player's coordinates.
+void TestPlayerLocation(/* inout */ char board[dimension][dimension], /* out */ int& x, /* out */ int& y) { //Runs "RelocatePlayer" with the player's coordinates.
     //Precondition:
     //  The board is set && "RelocatePlayer" has been prototyped.
     //Postcondition:
-    //  The player's coordinates have been passed to "RelocatePlayer".
+    //  The player's coordinates have been passed to the calling function.
 
     for (int i = 0; i < (dimension-1); i++) {
         if(board[i][0] == '0') {
-            RelocatePlayer(i, 0, board, input);
+            x = i;
+            y = 0;
         }else if(board[i][1] == '0') {
-            RelocatePlayer(i, 1, board, input);
+            x = i;
+            y = 1;
         }else if(board[i][2] == '0') {
-            RelocatePlayer(i, 2, board, input);
+            x = i;
+            y = 2;
         }else if(board[i][3] == '0') {
-            RelocatePlayer(i, 3, board, input);
+            x = i;
+            y = 3;
         }else if(board[i][4] == '0') {
-            RelocatePlayer(i, 4, board, input);
+            x = i;
+            y = 4;
         }else if(board[i][5] == '0') {
-            RelocatePlayer(i, 5, board, input);
+            x = i;
+            y = 5;
         }else if(board[i][6] == '0') {
-            RelocatePlayer(i, 6, board, input);
+            x = i;
+            y = 6;
         }else if(board[i][7] == '0') {
-            RelocatePlayer(i, 7, board, input);
+            x = i;
+            y = 7;
         }else if(board[i][8] == '0') {
-            RelocatePlayer(i, 8, board, input);
+            x = i;
+            y = 8;
         }else if(board[i][(dimension-1)] == '0') {
-            RelocatePlayer(i, (dimension-1), board, input);
-        }
-    }
+            x = i;
+            y = (dimension-1);
+        } //if
+    } //for
 }
 
-void RelocatePlayer(const int x, const int y, char board[dimension][dimension], char input) { //Actually moves the player.
+void RelocatePlayer(/* in */ const int x, /* in */ const int y, /* inout */ char board[dimension][dimension], /* in */ const char input) { //Actually moves the player.
     //Precondition:
     //  The player's input is read and stored && The board has been set && The player's coordinates have been passed.
     //Postcondition:
@@ -138,7 +159,7 @@ void RelocatePlayer(const int x, const int y, char board[dimension][dimension], 
     board[x][y] = '-';
     if(tolower(input) == 'w' && x > 0 && x <= (dimension-1)) {
         board[x - 1][y] = '0';
-    }else if(tolower(input) == 's' && x >= 0 && x < (dimension-1)) { //BROKEN!!
+    }else if(tolower(input) == 's' && x >= 0 && x < (dimension-1)) {
         board[x + 1][y] = '0';
     }else if(tolower(input) == 'a' && y > 0 && y <= (dimension-1)) {
         board[x][y - 1] = '0';
@@ -146,12 +167,18 @@ void RelocatePlayer(const int x, const int y, char board[dimension][dimension], 
         board[x][y + 1] = '0';
     }else if(tolower(input) == 'r') {
         board[4][4] = '0';
+        srand(time(0));
+        int dim1 = rand() % dimension;
+        int dim2 = rand() % dimension;
+        if(dim1 != 4 && dim2 != 4) {
+            board[dim1][dim2] = '8';
+        }
     }else {
         board[x][y] = '0';
-    }
+    } //if
 }
 
-bool TestClose(char& input) { //Test if player inputs '~'.
+bool TestClose(/* in */ const char input) { //Test if player inputs '~'.
     //Precondition:
     //  The player's input is read and stored.
     //Postcondition:
@@ -161,5 +188,5 @@ bool TestClose(char& input) { //Test if player inputs '~'.
         return true;
     }else {
         return false;
-    }
+    } //if
 }
