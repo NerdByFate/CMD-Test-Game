@@ -3,12 +3,14 @@
 /
 /This program was authored by Cherokee Parker (aka NerdByFate; 33kingkiller; John Wot) on 8-3-15.
 /
-/This program was last updated on 8-7-15.
+/This program was last updated on 8-15-15.
 */
 
 #include "libs.h"
 
 const int dimension = 10;
+
+int score;
 
 int main() {
     //Precondition:
@@ -21,6 +23,9 @@ int main() {
     bool close = false;
     char board[dimension][dimension]; //Creates 2D array.
     char input;
+
+    int score;
+
     cout << "Welcome to my test game! Enter 'w' to move up, 'a' to move to the left, and 'd' to move to the right. You can also use '~' to quit the game and 'r' to reset th-e board (this will spawn a new enemy). Press enter after each character.\n\n";
 
     //Main Module:
@@ -32,12 +37,42 @@ int main() {
         } //if
         PrintBoard(board);
         GetInput(input);
-        MovePlayer(board, input);
+        MovePlayer(board, input, score);
     } //while
 
-    cout << "Thank you for playing this test game by Cherokee Parker!\n" << "Press ENTER to continue...\n\n";
+    ifstream scoreInput;
+    ofstream output;
+
+    scoreInput.open("high.dat");
+    output.open("high.dat");
+
+    int highScore;
+
+    //BROKEN
+    scoreInput >> highScore;
+    if(!scoreInput) {
+        cout << "The high score could not be initialized (Do not fear, the high score function never worked)! Setting to zero...\n\n";
+        output << 0;
+        highScore = 0;
+        output.close();
+    }else if(score > highScore) {
+        ofstream tempOutput;
+        tempOutput.open("temp.dat");
+        tempOutput << score;
+        tempOutput.close();
+        output.close();
+        remove("high.dat");
+        rename("temp.dat", "high.dat");
+    }else {
+        output.close();
+    }
+
+    cout << "Thank you for playing this test game by Cherokee Parker! Your score was " << score << ". Your high score was " << highScore << ".\n" << "Press ENTER to continue...\n\n";
     cin.ignore(1);
     cin.get();
+
+    scoreInput.close();
+
     return 0;
 }
 
@@ -47,17 +82,10 @@ void CreateBoard(/* inout */ char board[dimension][dimension]) { //Sets player t
     //Postcondition:
     //  The board is set.
 
-    for(int i = 0; i < (dimension-1); i++) {
-        board[i][0] = '-';
-        board[i][1] = '-';
-        board[i][2] = '-';
-        board[i][3] = '-';
-        board[i][4] = '-';
-        board[i][5] = '-';
-        board[i][6] = '-';
-        board[i][7] = '-';
-        board[i][8] = '-';
-        board[i][(dimension-1)] = '-';
+    for(int i = 0; i < dimension; i++) {
+        for(int f = 0; f < dimension; f++) {
+            board[i][f] = '-';
+        }
     } //for
     board[4][4] = '0';
 
@@ -97,7 +125,7 @@ void GetInput(/* out */ char& input) { //"cin".
     } //if
 }
 
-void MovePlayer(/* inout */ char board[dimension][dimension], /* in */ const char userInput) { //Does not directly move the player.
+void MovePlayer(/* inout */ char board[dimension][dimension], /* in */ const char userInput, /* inout */ int& score) { //Does not directly move the player.
     //Precondition:
     //  N/A; level 2 has precondition.
     //Postcondition:
@@ -106,6 +134,7 @@ void MovePlayer(/* inout */ char board[dimension][dimension], /* in */ const cha
     int x,y;
 
     TestPlayerLocation(board, x, y);
+    TestNewLocation(board, x, y, score, userInput);
     RelocatePlayer(x, y, board, userInput);
 }
 
@@ -115,7 +144,7 @@ void TestPlayerLocation(/* inout */ char board[dimension][dimension], /* out */ 
     //Postcondition:
     //  The player's coordinates have been passed to the calling function.
 
-    for (int i = 0; i < (dimension-1); i++) {
+    for (int i = 0; i < dimension; i++) {
         if(board[i][0] == '0') {
             x = i;
             y = 0;
@@ -148,6 +177,25 @@ void TestPlayerLocation(/* inout */ char board[dimension][dimension], /* out */ 
             y = (dimension-1);
         } //if
     } //for
+}
+
+void TestNewLocation(/* inout */ char board[dimension][dimension], /* in */ const int x, /* in */ const int y, /* inout */ int& score, /* in */ char input) {
+    //Precondition:
+    //  The players coordinates have been passed && The player has inputed && The board + score have been passed.
+    //Postcondition:
+    //  The score has been added to or subtracted from according to the input + ending location's character data.
+
+    if(input == 'w' && board[x-1][y] == '8') {
+        score += 100;
+    }else if(input == 'a' && board[x][y-1] == '8') {
+        score += 100;
+    }else if(input == 's' && board[x+1][y] == '8') {
+        score += 100;
+    }else if(input == 'd' && board[x][y+1] == '8') {
+        score += 100;
+    }else {
+        score++;
+    }
 }
 
 void RelocatePlayer(/* in */ const int x, /* in */ const int y, /* inout */ char board[dimension][dimension], /* in */ const char input) { //Actually moves the player.
